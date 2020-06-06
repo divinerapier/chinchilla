@@ -1,0 +1,20 @@
+[package]
+name = "chinchilla"
+version = "0.1.0"
+authors = ["divinerapier <poriter.coco@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+actix-web = "3.0.0-alpha.3"
+actix-rt = "1"
+r2d2 = "0.8.8"
+r2d2_mysql = "*"
+mysql = "*"
+env_logger = "0.7.1"
+serde = "*"
+serde_derive = "1.0.111"
+mongodb = "0.11.0"
+futures = "*"
+uuid = { version = "*", features = ["serde", "v1"] }
