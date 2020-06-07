@@ -4,11 +4,6 @@ use mysql::prelude::*;
 use mysql::*;
 use serde_derive::Deserialize;
 
-struct PostTag<'a> {
-    post_uuid: &'a str,
-    tag: &'a str,
-}
-
 #[post("/post")]
 pub async fn create_post(
     req: web::Json<crate::types::CreatePostRequest>,
@@ -24,10 +19,10 @@ pub async fn create_post(
 
     db.transaction(|mut tx| {
         crate::dao::create_post(&mut tx, &u, &req.title, &req.link_name)?;
-        crate::dao::create_post_tag(&mut tx, &u, &req.title)?;
+        crate::dao::create_post_tag(&mut tx, &u, &req.tags)?;
         Ok(())
     })
-        .unwrap();
+    .unwrap();
 
     format!("{}", u)
 }

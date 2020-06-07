@@ -9,15 +9,16 @@ impl MySQLClient {
         let pool = r2d2::Pool::new(manager).unwrap();
         MySQLClient(pool)
     }
-    pub fn transaction<F>(&self, mut f: F) -> Result<(), crate::error::Error>
+    pub fn transaction<F, U>(&self, mut f: F) -> Result<U, crate::error::Error>
     where
-        F: FnMut(&mut mysql::Transaction) -> Result<(), crate::error::Error>,
+        F: FnMut(&mut mysql::Transaction) -> Result<U, crate::error::Error>,
     {
         let mut conn = self.0.get()?;
         let tx_opts = mysql::TxOpts::default();
         tx_opts.set_isolation_level(Some(mysql::IsolationLevel::RepeatableRead));
         let mut tx = conn.start_transaction(tx_opts)?;
-        f(&mut tx)?;
-        Ok(tx.commit()?)
+        let r = f(&mut tx)?;
+        tx.commit()?;
+        Ok(r)
     }
 }

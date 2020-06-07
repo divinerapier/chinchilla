@@ -1,7 +1,15 @@
+use std::collections::HashMap;
+
 use crate::error::Error;
 use crate::types::CreatePostRequest;
 use mysql::prelude::*;
 use mysql::*;
+use std::ops::Index;
+
+struct PostTag<'a> {
+    post_uuid: &'a str,
+    tag: &'a str,
+}
 
 pub fn create_post(
     tx: &mut Transaction,
@@ -14,15 +22,15 @@ pub fn create_post(
     let _result: Vec<String> = tx.exec(
         sql,
         params! {
-            "uuid" => &uuid,
-            "title" => &title,
-            "link_name" => &link_name,
-            },
+        "uuid" => &uuid,
+        "title" => &title,
+        "link_name" => &link_name,
+        },
     )?;
     Ok(())
 }
 
-pub fn create_post_tag(tx: &mut Transaction, uuid: &str, tags: &str)  -> crate::error::Result<()>{
+pub fn create_post_tag(tx: &mut Transaction, uuid: &str, tags: &str) -> crate::error::Result<()> {
     let sql = r"INSERT INTO post_tag (post_uuid, tag)
        VALUES (:post_uuid, :tag)";
     let mut post_tags = vec![];
@@ -46,11 +54,38 @@ pub fn create_post_tag(tx: &mut Transaction, uuid: &str, tags: &str)  -> crate::
         sql,
         post_tags.iter().map(|p| {
             params! {
-                    "post_uuid" => p.post_uuid,
-                    "tag" => p.tag,
-                }
+                "post_uuid" => p.post_uuid,
+                "tag" => p.tag,
+            }
         }),
     )?;
     Ok(())
 }
 
+struct TagCount {
+    tag: String,
+    tag_count: usize,
+}
+
+impl FromRow for TagCount {
+    fn from_row_opt(row: Row) -> std::result::Result<Self, FromRowError>
+        where
+            Self: Sized,
+    {
+        if row.len() != 2 {
+            return Err(FromRowError(row));
+        }
+        let (tag, tag_count) = from_row_opt::<(String, usize)>(row)?;
+        Ok(TagCount { tag, tag_count })
+    }
+}
+
+pub fn get_tags(tx: &mut Transaction) -> crate::error::Result<HashMap<String, usize>> {
+    let sql = r"SELECT tag, COUNT(*) tag_count FROM post_tag GROUP BY tag";
+    let tag_count: Vec<TagCount> = tx.query(sql)?;
+    let mut m = HashMap::new();
+    for item in tag_count {
+        m.insert(item.tag.clone(), item.tag_count);
+    }
+    Ok(m)
+}

@@ -98,6 +98,8 @@ async fn main() -> std::io::Result<()> {
             .service(index)
             // create post
             .service(post::create_post)
+            // get tags
+            .service(tag::get_tags)
             .service(no_params)
             .service(
                 web::resource("/resource2/index.html")
