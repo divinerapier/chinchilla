@@ -1,13 +1,9 @@
-use actix_web::{get, middleware, post, web, App, HttpRequest, HttpResponse, HttpServer};
-use futures::stream::StreamExt;
-use mysql::prelude::*;
-use mysql::*;
-use serde_derive::Deserialize;
+use actix_web::{get, web, Responder};
 
 #[get("/tags")]
-pub async fn get_tags(db: web::Data<crate::db::MySQLClient>) -> String {
+pub async fn get_tags(db: web::Data<crate::db::MySQLClient>) -> impl Responder {
     let m = db
         .transaction(|mut tx| Ok(crate::dao::get_tags(&mut tx)?))
         .unwrap();
-    format!("{:?}", m)
+    web::Json(m)
 }

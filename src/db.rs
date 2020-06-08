@@ -1,3 +1,7 @@
+use crate::result::Result;
+use r2d2::PooledConnection;
+use r2d2_mysql::MysqlConnectionManager;
+
 #[derive(Clone)]
 pub struct MySQLClient(r2d2::Pool<r2d2_mysql::MysqlConnectionManager>);
 
@@ -9,9 +13,9 @@ impl MySQLClient {
         let pool = r2d2::Pool::new(manager).unwrap();
         MySQLClient(pool)
     }
-    pub fn transaction<F, U>(&self, mut f: F) -> Result<U, crate::error::Error>
+    pub fn transaction<F, U>(&self, mut f: F) -> Result<U>
     where
-        F: FnMut(&mut mysql::Transaction) -> Result<U, crate::error::Error>,
+        F: FnMut(&mut mysql::Transaction) -> Result<U>,
     {
         let mut conn = self.0.get()?;
         let tx_opts = mysql::TxOpts::default();
@@ -20,5 +24,9 @@ impl MySQLClient {
         let r = f(&mut tx)?;
         tx.commit()?;
         Ok(r)
+    }
+
+    pub fn get(&self) -> Result<PooledConnection<MysqlConnectionManager>> {
+        Ok(self.0.get()?)
     }
 }

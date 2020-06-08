@@ -9,7 +9,6 @@ impl std::fmt::Display for Error {
         match self {
             Error::R2D2(ref e) => write!(f, "r2d2 error: {}", e),
             Error::MySQL(ref e) => write!(f, "mysql error: {}", e),
-            _ => unreachable!(),
         }
     }
 }
@@ -25,5 +24,3 @@ impl From<mysql::Error> for Error {
         Error::MySQL(e)
     }
 }
-
-pub type Result<T> = std::result::Result<T, Error>;

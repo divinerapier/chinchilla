@@ -7,6 +7,7 @@ mod dao;
 mod db;
 mod error;
 mod post;
+mod result;
 mod tag;
 mod types;
 mod uuid;
@@ -100,6 +101,10 @@ async fn main() -> std::io::Result<()> {
             .service(post::create_post)
             // get tags
             .service(tag::get_tags)
+            // get post list
+            .service(post::get_post_list)
+            // get post
+            .service(post::get_post)
             .service(no_params)
             .service(
                 web::resource("/resource2/index.html")
