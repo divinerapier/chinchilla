@@ -49,6 +49,12 @@ pub fn create_post_tag(tx: &mut Transaction, uuid: &str, tags: &str) -> crate::r
             tag: tag,
         });
     }
+    if post_tags.is_empty() {
+        post_tags.push(PostTag {
+            post_uuid: &uuid,
+            tag: "default",
+        });
+    }
     tx.exec_batch(
         sql,
         post_tags.iter().map(|p| {
