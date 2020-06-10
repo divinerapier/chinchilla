@@ -96,6 +96,18 @@ async fn main() -> std::io::Result<()> {
             .wrap(middleware::DefaultHeaders::new().header("X-Version", "0.2"))
             .wrap(middleware::Compress::default())
             .wrap(middleware::Logger::default())
+            .wrap(
+                actix_cors::Cors::new()
+                    // .allowed_origin("*")
+                    .allowed_methods(vec!["POST", "GET"])
+                    .allowed_headers(vec![
+                        actix_web::http::header::ACCESS_CONTROL_ALLOW_ORIGIN,
+                        actix_web::http::header::ACCEPT,
+                        actix_web::http::header::ACCESS_CONTROL_ALLOW_HEADERS,
+                        actix_web::http::header::ACCESS_CONTROL_ALLOW_METHODS,
+                    ])
+                    .finish(),
+            )
             .service(index)
             // create post
             .service(post::create_post)
